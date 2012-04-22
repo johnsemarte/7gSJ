@@ -1,0 +1,54 @@
+Folder structure and file usage
+
+dialogs									// Content for all dialogs is found here
+	collegiumCommentsForProject.php			// Display comments from the collegium for a single project
+	login.php								// The login form
+	newExternal.php							// The create new external user form
+	studentGroupForProject.php				// Display students and group information for a project (uses https://tvil.hig.no/json_services/getUserDetails.php)
+fileLibrary								// All file related functions is here
+	deleteFile.php							// Script to remove a file from the database
+	file.php								// Script to retrieve and show a file from the database
+	fileList.php							// Used to list files in the tinymce dialog for selecting files from the database
+	newFileVersion.php						// Create a new version of a file NOTE, need a bit of work, see comments in the file
+	uploadFile.php							// Used to store a newly uploaded file in the database
+json									// All scripts that return json data is here
+	createNewExternal.php					// Script used to store a new external user
+	createNewProject.php					// Script used to create a new project
+	externalUserLogin.php					// Script used to log in an external user
+	fileList.php							// Script returns a json encoded list of files for a given user (used by fileLibrary/fileList)
+	isLoggedIn.php							// Check to see if a user is logged in, return user id and user type (employee, student, external)
+	login.php								// Script used to try to login as a HiG user (uses http://tvil.hig.no/json_services/checkUserLogin.php)
+	saveUpdatedProject.php					// Script used to store updated project information in the database
+	updateExternal.php						// Script used to store updated company information in the database
+LnF										// All look and feel related items
+	DeleteDocument.png						// Icon representing a refused project
+	DocumentDraw.png						// Icon representing a project draft
+	DocumentIn.png							// Icon representing a submitted project
+	footer.png								// The image of the footer of the page
+	footer_bg.png							// The background for the footer of the page (supplements the footer.png)
+	GoalFlag.png							// Icon representing a project that has passed the collegium inspection
+	GreenFlag.png							// Icon representing a resubmitted/reworked/rewritten project proposal
+	heading.png								// The image for the header part of the page
+	heading_bg.png							// The background for the header of the page (supplements the heading.png)
+	RedFlag.png								// Icon representing a project that the collegium feels need more work
+	Users.png								// Icon representing a project that has been assigned to a project group
+pages									// All content shown in the main part of the layout is loaded from files in this folder
+	availableProjects.php					// Display a list of available projects (project that students can choose amongst) NOTE! Not implemented :)
+	companyPresentation.php					// Presentation of an external user (company), NOTE! should probably be rewamped
+	editProject.php							// Contains functionality to edit a project
+	externalUserEditInfo.php				// Contains functionality to edit information about an external user (company)
+	externalUserFiles.php					// Contains functionality to list and upload files for an external user, NOTE, need the option to delete files
+	externalUserProjects.php				// Contains functionality to list project for an external user
+	newProject.php							// Contains functionality to create a new project
+	welcome.html							// Contains the HTML that will be loaded upon page load if no user is logged in
+	welcomeExternal.html					// Contains the HTML that will be loaded upon page load is an external user is logged in
+tinymce									// All tinymce editor files
+tvil.hig.no demo						// Demo scripts for the functionality at http(s)://tvil.hig.no
+
+bacheloroppgaver.css						// All CSS for the editing of bachelor thesisis
+bacheloroppgaver.js							// Major part of the JavaScript code for the system
+bachelor_thesis.sql							// A database dump, contains all table definitions and some example data
+db.php										// Connect to the database, contains the database username/password information
+higstyles.css								// Contains the CSS that creates the HiG look on the site
+index.php									// This is the main file that gets loaded
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Check of login script</title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript">
+var semester = null;
+var department = null;
+
+$(document).ready (function () {
+	$('#courses').hide();
+	$('#students').hide();
+	$(document).ready (function () {	// Load the list of departments
+		$.ajax ({
+			// This script returns an array of department names
+			url : 'https://tvil.hig.no/json_services/getDepartmentList.php',
+			crossDomain : true,
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// data is an array of department names
+				for (x in data) {
+					$('#departments').append ('<li>'+data[x]+'</li>');
+				}
+				// When the user clicks on a department, show the courses for that department
+				$('#departments li').click (findCourses);
+			},
+			error : function (jqXHR, textStatus, errorThrown) {	// Give an alert if this is attempted in a non supported browser
+				// Note, when IE/Opera and others do get support, this message will simply dissapear from those browsers
+				// For now, the mentioned browsers are the ones with verified support
+				alert (errorThrown+"\nNB Due to lack of cross origin support this page will only work in Chrome, FireFox and Safari");
+			}
+		});
+	});
+	$(document).ready (function () {	// Get the list of registered semesters
+		$.ajax ({
+			// This script returnes an array of objects, each object contains the attributes :
+			// period - semester and year
+			// aar - the year
+			// semester - the semester
+			url : 'https://tvil.hig.no/json_services/getPeriodList.php',
+			crossDomain : true,
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// data is an array of objects
+				for (x in data) {
+					// We only want the semester/year combination
+					$('#semester').append ('<li>'+data[x].period+'</li>');
+				}
+				// When a user clicks on a period, show the courses for that period
+				$('#semester li').click (selectPeriod);
+			}
+		});
+	});
+});
+
+/**
+ * Called whenever the user clicks on a particular period (semester and year)
+ * Display all the courses that department is responsible for during that period
+ */
+function selectPeriod () {
+	// Hide the list of students (if shown)
+  $('#students').slideUp();
+	// The selected semester is in this items html
+	semester = $(this).html();
+	if (department != null) {	// Only show courses if a department is selected
+		// Hide the list of courses
+		$('#courses').slideUp();
+		$.ajax ({
+			// This script takes the department to show courses from as a parameter
+			// it also takes an optional parameter "period" to restrict the returned
+			// result to only the courses for that period.
+			// The results is returned as an array of object containing : 
+			// id - the id of the course (the internal id, not the course code
+			// code - the course code (the offical HiG course code)
+			// period - the period this course is running
+			// description - a short textual description of the course
+			url : 'https://tvil.hig.no/json_services/getDepartmentCourseList.php',
+			crossDomain : true,
+			// Search for a departments courses in a given period
+			data : { 'department' : department, 'period' : semester },
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// remove all items from the course list
+				$('#courselist').empty();
+				// The returned data is an array of objects
+				for (x in data) {
+					// Add the description of the course to the list (this includes both the course code and the period)
+					$('#courselist').append ('<li>'+data[x].description+'</li>');
+					// Set the id of the course as a data item for this element
+					$('#courselist li').last().data ('id', data[x].id);
+				}
+				// When the user clicks a course description, show the students taking this course
+				$('#courselist li').click (findStudents);
+				// Display the list of courses
+				$('#courses').slideDown();
+			}
+		});
+	}
+}
+
+/**
+ * Called whenever the user clicks on a department
+ * Display all the courses that department is responsible for
+ */
+function findCourses () {
+	// Hide the list of students (if shown)
+  $('#students').slideUp();
+	// Hide the list of courses (if shown)
+	$('#courses').slideUp();
+	// The department name is in the html of this element
+	department = $(this).html();
+	$.ajax ({
+		// This script takes the department to show courses from as a parameter
+		// it also takes an optional parameter "period" to restrict the returned
+		// result to only the courses for that period.
+		// The results is returned as an array of object containing : 
+		// id - the id of the course (the internal id, not the course code
+		// code - the course code (the offical HiG course code)
+		// period - the period this course is running
+		// description - a short textual description of the course
+		url : 'https://tvil.hig.no/json_services/getDepartmentCourseList.php',
+		crossDomain : true,
+		// We want to show the courses for a given department
+		data : { 'department' : department },
+		type : 'POST',
+		dataType : 'json',
+		success : function (data) {
+			// Clear the course list
+			$('#courselist').empty();
+			// The returned data is an array of objects
+			for (x in data) {
+				// Add the description of the course to the list (this includes both the course code and the period)
+				$('#courselist').append ('<li>'+data[x].description+'</li>');
+				// Set the id of the course as a data item for this element
+				$('#courselist li').last().data ('id', data[x].id);
+			}
+			// When the user clicks a course description, show the students taking this course
+			$('#courselist li').click (findStudents);
+			// Display the list of courses
+			$('#courses').slideDown();
+		}
+	});
+}
+
+/**
+ * This function is called whenever the user clicks on a course
+ * Display all the students in that course
+ */
+function findStudents () {
+	// The id for the course is stored as data in this element
+	var course_id = $(this).data('id');
+	// Hide the list of students (if displayed)
+	$('#students').slideUp();
+	$.ajax ({
+		// This script returns all students registered for a given course.
+		// The data is returned as an array of object where each object contains :
+		// uid - the student number
+		// givenname - the students first name
+		// surename - the students last name
+		// department - the department the student is registered at
+		url : 'https://tvil.hig.no/json_services/getCourseStudentList.php',
+		crossDomain : true,
+		// Send the course id as a parameter
+		data : { 'course_id' : course_id },
+		type : 'POST',
+		dataType : 'json',
+		success : function (data) {
+			// Clear the student list, we will fill it up with new names
+			$('#studentlist').empty();
+			// The returned data is an array of objects
+			for (x in data) {
+				// Write out the first and last name
+				$('#studentlist').append ('<li>'+data[x].surename+', '+data[x].givenname+'</li>');
+				// Set the student number as a data element for the student
+				$('#studentlist li').last().data ('uid', data[x].uid);
+			}
+			// Show the list of students
+			$('#students').slideDown();
+		}
+	});
+}
+</script>
+<style type="text/css">
+#departments, #semester {
+	float: left;
+	width: 300px; 
+	margin: 10px;
+}
+
+ul {
+	margin : 5px;
+	padding : 0px;
+}
+
+li {
+	list-style-type : none;
+	border-left : 8px solid #77D;
+	background : #BBF;
+	padding : 2px;
+	margin : 2px;
+	padding-left : 5px;
+	cursor: pointer;
+	border-radius : 2px;
+}
+
+li:nth-child(even) {
+	background: #DDF
+}
+
+li:hover {
+	background : #CCC;
+}
+
+#courselist, #studentlist {
+	overflow: scroll;
+	width: 500px;
+	height: 250px;
+}
+</style>
+</head>
+<body>
+<h2>Avdelinger</h2>
+<ul id="departments"></ul><ul id="semester"></ul><br clear="both"/>
+<div id="courses">
+<h2>Emner</h2>
+<ul id="courselist"></ul>
+</div>
+<div id="students">
+<h2>Studenter</h2>
+<ul id="studentlist"></ul>
+</div>

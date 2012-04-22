@@ -1,0 +1,1 @@
+See explore.html and login_userinfo.html for a demonstration of the things you can call at http(s)://tvil.hig.no

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Check of login script</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready (function () {
+	$('input[value="check user"]').click (function () {
+		// Prøve å logge inn som bruker
+		var uname = this.form.uname.value;
+		var pwd = this.form.pwd.value;
+		$('#result').html ('');
+		$.ajax ({
+			url : 'https://tvil.hig.no/json_services/checkUserLogin.php',
+			data : { 'uname': uname, 'pwd': pwd },
+			crossDomain : true,
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// Viser resultatet av pålogging
+				$('#result').html ($('#result').html()+'<b>Checking login for :'+uname+'</br>');
+				// Vise alle elementer som returneres via json
+				for (e in data) {
+					$('#result').html ($('#result').html()+'[ '+e+' ] = '+data[e]+'</br>');
+				}
+			}
+		});
+	});
+	$('input[value="Lookup UID"]').click (function () {
+		// Hente informasjon om en gitt bruker via brukerid (studentnr eller påloggingsnavn for ansatt)
+		$('#result').html ('');
+		var uid = this.form.search.value;
+		$.ajax ({
+			url : 'https://tvil.hig.no/json_services/getUserDetails.php',
+			data : { 'uid': uid },
+			crossDomain : true,
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// Viser all informasjon
+				$('#result').html ($('#result').html()+'<b>Getting details for :'+uid+'</br>');
+				for (e in data) {
+					// Viser alle elementer mottatt via json
+					if (e == 'courses') {
+						// Håndtere kurs separat, siden dette er en array
+						$('#result').html ($('#result').html()+"<i>Tilknyttet kurs : </i></br>");
+						for (i in data[e]) {
+							// Vise alle kurs
+							$('#result').html ($('#result').html()+data[e][i].period+' '+data[e][i].description+"<br/>");
+						}
+					} else
+						$('#result').html ($('#result').html()+'[ '+e+' ] = '+data[e]+'</br>');
+				}
+			}
+		});
+	});
+	$('input[value="Search"]').click (function () {
+		// Søk etter en gitt bruker
+		// Kan være fornavn(mellomrom)etternavn eller etternavn, fornavn
+		// % brukes som wildcard
+		$('#result').html ('');
+		var search = this.form.search.value;
+		$.ajax ({
+			url : 'https://tvil.hig.no/json_services/searchUser.php',
+			data : { 'search': search },
+			crossDomain : true,
+			type : 'POST',
+			dataType : 'json',
+			success : function (data) {
+				// Vise alle data fra resultatet
+				$('#result').html ($('#result').html()+'<b>Getting details for :'+search+'</br>');
+				if (data.error!=null) {
+					// Dersom vi har en feilmelding så går vi her
+					for (e in data) {
+						$('#result').html ($('#result').html()+'[ '+e+' ] = '+data[e]+'</br>');
+					}
+				} else {
+					// Dersom ingen feilmelding så har vi en array av brukere
+					var tmp = '<ul>';
+					for (i in data) {
+						// Viser hver enkelt bruker
+						tmp += '<li>';
+						for (e in data[i]) {
+							// Viser detaljer om gitt bruker
+							tmp += ('[ '+e+' ] = '+data[i][e]+'</br>');
+						}
+						tmp += '</li>';
+					}
+					$('#result').html ($('#result').html()+tmp+'</ul>');
+				}
+			}
+		});
+	});
+});
+</script>
+</head>
+<body>
+<h2>Check login</h2>
+<form>
+<label for="uname">User name</label><input type="text" name="uname"/></br>
+<label for="pwd">Password</label><input type="password" name="pwd"/></br>
+<input type="button" value="check user">
+</form>
+<h2>Check user functions</h2>
+<form>
+<label for="search">Search string/uid</a><input type="text" name="search"/></br>
+<input type="button" value="Search"><input type="button" value="Lookup UID"/></br>
+</form>
+<div id="result"></div>
+</body>
+</html>
